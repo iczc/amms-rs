@@ -1,3 +1,5 @@
+use crate::amms::uniswap_v4::UniswapV4Pool;
+
 use super::{
     balancer::BalancerPool, erc_4626::ERC4626Vault, error::AMMError, uniswap_v2::UniswapV2Pool,
     uniswap_v3::UniswapV3Pool,
@@ -156,4 +158,10 @@ macro_rules! amm {
     };
 }
 
-amm!(UniswapV2Pool, UniswapV3Pool, ERC4626Vault, BalancerPool);
+amm!(
+    UniswapV2Pool,
+    UniswapV3Pool,
+    UniswapV4Pool,
+    ERC4626Vault,
+    BalancerPool
+);

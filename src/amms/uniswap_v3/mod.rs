@@ -830,7 +830,7 @@ impl UniswapV3Factory {
         Ok(pools)
     }
 
-    async fn sync_token_decimals<N, P>(
+    pub async fn sync_token_decimals<N, P>(
         pools: &mut [AMM],
         provider: P,
     ) -> Result<(), BatchContractError>
@@ -865,7 +865,7 @@ impl UniswapV3Factory {
         Ok(())
     }
 
-    async fn sync_slot_0<N, P>(
+    pub async fn sync_slot_0<N, P>(
         pools: &mut [AMM],
         block_number: BlockId,
         provider: P,
@@ -913,7 +913,7 @@ impl UniswapV3Factory {
         Ok(())
     }
 
-    async fn sync_tick_bitmaps<N, P>(
+    pub async fn sync_tick_bitmaps<N, P>(
         pools: &mut [AMM],
         block_number: BlockId,
         provider: P,
@@ -1022,7 +1022,7 @@ impl UniswapV3Factory {
     }
 
     // TODO: Clean this function up
-    async fn sync_tick_data<N, P>(
+    pub async fn sync_tick_data<N, P>(
         pools: &mut [AMM],
         block_number: BlockId,
         provider: P,
@@ -1159,7 +1159,7 @@ impl UniswapV3Factory {
     }
 }
 
-fn tick_to_word(tick: i32, tick_spacing: i32) -> i32 {
+pub fn tick_to_word(tick: i32, tick_spacing: i32) -> i32 {
     let mut compressed = tick / tick_spacing;
     if tick < 0 && tick % tick_spacing != 0 {
         compressed -= 1;

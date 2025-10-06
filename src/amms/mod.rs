@@ -1,6 +1,7 @@
 use std::{
     collections::HashMap,
     hash::{Hash, Hasher},
+    sync::Arc,
 };
 
 use alloy::{dyn_abi::DynSolType, network::Network, primitives::Address, providers::Provider, sol};
@@ -17,6 +18,7 @@ pub mod factory;
 pub mod float;
 pub mod uniswap_v2;
 pub mod uniswap_v3;
+pub mod uniswap_v4;
 
 sol! {
     #[sol(rpc)]
@@ -29,13 +31,15 @@ sol!(
 #[sol(rpc)]
 contract IERC20 {
     function decimals() external view returns (uint8);
+    function symbol() external view returns (string memory);
 });
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
 pub struct Token {
     pub address: Address,
     pub decimals: u8,
-    // TODO: add optional tax
+    pub symbol: String,
+    pub chain_id: u64,
 }
 
 impl Token {
@@ -44,13 +48,25 @@ impl Token {
         N: Network,
         P: Provider<N> + Clone,
     {
-        let decimals = IERC20::new(address, provider).decimals().call().await?;
+        let token = Arc::new(IERC20::new(address, provider.clone()));
+        let decimals = token.decimals().call().await?;
+        let symbol = token.symbol().call().await?;
 
-        Ok(Self { address, decimals })
+        Ok(Self {
+            address,
+            decimals,
+            chain_id: provider.get_chain_id().await?,
+            symbol,
+        })
     }
 
     pub const fn new_with_decimals(address: Address, decimals: u8) -> Self {
-        Self { address, decimals }
+        Self {
+            address,
+            decimals,
+            symbol: String::new(),
+            chain_id: 0,
+        }
     }
 
     pub const fn address(&self) -> &Address {
@@ -67,6 +83,7 @@ impl From<Address> for Token {
         Self {
             address,
             decimals: 0,
+            ..Default::default()
         }
     }
 }

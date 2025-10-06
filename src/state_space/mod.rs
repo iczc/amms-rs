@@ -172,14 +172,7 @@ where
     }
 
     pub async fn sync(mut self) -> Result<StateSpaceManager<N, P>, AMMError> {
-        let mut state_space = if self.snapshot_path.is_some() {
-            let serialized = serde_json::from_reader::<_, SerializableStateSpace>(
-                std::fs::File::open(self.snapshot_path.unwrap())?,
-            )?;
-            serialized.into()
-        } else {
-            StateSpace::default()
-        };
+        let mut state_space = StateSpace::default();
 
         let chain_tip = BlockId::from(self.provider.get_block_number().await?);
         let factories = self.factories.clone();
@@ -218,6 +211,12 @@ where
             futures.push(tokio::spawn(async move {
                 let mut discovered_amms = factory.discover(chain_tip, provider.clone()).await?;
 
+                info!(
+                    target: "state_space::sync",
+                    factory = %factory.address(),
+                    discovered = discovered_amms.len(),
+                    "Discovered AMMs"
+                );
                 if let Some(amms) = extension {
                     discovered_amms.extend(amms);
                 }

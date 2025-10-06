@@ -93,6 +93,7 @@ where
                     AMM::BalancerPool(_) => 0,
                     AMM::UniswapV2Pool(_) => 1,
                     AMM::UniswapV3Pool(_) => 2,
+                    AMM::UniswapV4Pool(_) => 3,
                     // TODO: At the moment, filters are not compatible with vaults
                     AMM::ERC4626Vault(_) => todo!(),
                 };

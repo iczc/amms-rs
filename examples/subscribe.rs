@@ -4,7 +4,8 @@ use alloy::{
     rpc::client::ClientBuilder,
     transports::layers::{RetryBackoffLayer, ThrottleLayer},
 };
-use amms::{amms::uniswap_v2::UniswapV2Factory, state_space::StateSpaceBuilder};
+use alloy_provider::WsConnect;
+use amms::{amms::uniswap_v4::UniswapV4Factory, state_space::StateSpaceBuilder};
 use futures::StreamExt;
 use std::sync::Arc;
 
@@ -15,19 +16,20 @@ async fn main() -> eyre::Result<()> {
     let client = ClientBuilder::default()
         .layer(ThrottleLayer::new(500))
         .layer(RetryBackoffLayer::new(5, 200, 330))
-        .http(rpc_endpoint.parse()?);
+        .ws(WsConnect::new(rpc_endpoint))
+        .await?;
 
     let sync_provider = Arc::new(ProviderBuilder::new().connect_client(client));
 
-    let factories = vec![UniswapV2Factory::new(
-        address!("5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f"),
-        300,
-        10000835,
+    let factories = vec![UniswapV4Factory::new(
+        address!("0x000000000004444c5dc75cB358380D2e3dE08A90"),
+        21688329,
     )
     .into()];
 
     let state_space_manager = StateSpaceBuilder::new(sync_provider.clone())
         .with_factories(factories)
+        .with_snapshot_enabled(None)
         .sync()
         .await?;
 
@@ -37,7 +39,7 @@ async fn main() -> eyre::Result<()> {
     Under the hood, this method applies all state changes to any affected AMMs and returns a Vec of
     addresses, indicating which AMMs have been updated.
     */
-    let mut stream = state_space_manager.subscribe().await?.take(5);
+    let mut stream = state_space_manager.subscribe().await?;
     while let Some(updated_amms) = stream.next().await {
         if let Ok(amms) = updated_amms {
             println!("Updated AMMs: {:?}", amms);

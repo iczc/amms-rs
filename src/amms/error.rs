@@ -1,3 +1,5 @@
+use crate::amms::uniswap_v4::UniswapV4Error;
+
 use super::{
     balancer::BalancerError, erc_4626::ERC4626VaultError, uniswap_v2::UniswapV2Error,
     uniswap_v3::UniswapV3Error,
@@ -19,6 +21,8 @@ pub enum AMMError {
     UniswapV2Error(#[from] UniswapV2Error),
     #[error(transparent)]
     UniswapV3Error(#[from] UniswapV3Error),
+    #[error(transparent)]
+    UniswapV4Error(#[from] UniswapV4Error),
     #[error(transparent)]
     BalancerError(#[from] BalancerError),
     #[error(transparent)]
