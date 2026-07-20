@@ -261,11 +261,12 @@ impl AutomatedMarketMaker for UniswapV3Pool {
         Ok(())
     }
 
-    fn simulate_swap(
+    fn simulate_swap_with_fee(
         &self,
         base_token: Address,
         _quote_token: Address,
         amount_in: U256,
+        fee: u32,
     ) -> Result<U256, AMMError> {
         if amount_in.is_zero() {
             return Ok(U256::ZERO);
@@ -342,7 +343,7 @@ impl AutomatedMarketMaker for UniswapV3Pool {
                 swap_target_sqrt_ratio,
                 current_state.liquidity,
                 current_state.amount_specified_remaining,
-                self.fee,
+                fee,
             )
             .map_err(UniswapV3Error::from)?;
 
@@ -355,8 +356,6 @@ impl AutomatedMarketMaker for UniswapV3Pool {
                 .0;
 
             current_state.amount_calculated -= I256::from_raw(step.amount_out);
-
-            // TODO: adjust for fee protocol
 
             // If the price moved all the way to the next price, recompute the liquidity change for the next iteration
             if current_state.sqrt_price_x_96 == step.sqrt_price_next_x96 {
@@ -403,6 +402,15 @@ impl AutomatedMarketMaker for UniswapV3Pool {
         tracing::trace!(?amount_out);
 
         Ok(amount_out)
+    }
+
+    fn simulate_swap(
+        &self,
+        base_token: Address,
+        quote_token: Address,
+        amount_in: U256,
+    ) -> Result<U256, AMMError> {
+        self.simulate_swap_with_fee(base_token, quote_token, amount_in, self.fee)
     }
 
     fn simulate_swap_mut(

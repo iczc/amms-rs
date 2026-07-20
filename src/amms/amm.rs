@@ -39,6 +39,19 @@ pub trait AutomatedMarketMaker {
         amount_in: U256,
     ) -> Result<U256, AMMError>;
 
+    /// Simulate a swap with the swap fee supplied by the caller instead of the
+    /// pool's own fee; AMMs without an overridable fee reject the call
+    fn simulate_swap_with_fee(
+        &self,
+        base_token: Address,
+        quote_token: Address,
+        amount_in: U256,
+        fee: u32,
+    ) -> Result<U256, AMMError> {
+        let _ = (base_token, quote_token, amount_in, fee);
+        Err(AMMError::FeeOverrideUnsupported)
+    }
+
     /// Simulate a swap, mutating the AMM state
     /// Returns the amount_out in `quote token` for a given `amount_in` of `base_token`
     fn simulate_swap_mut(

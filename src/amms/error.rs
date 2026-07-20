@@ -29,6 +29,8 @@ pub enum AMMError {
     ParseFloatError(#[from] rug::float::ParseFloatError),
     #[error("Unrecognized Event Signature {0}")]
     UnrecognizedEventSignature(FixedBytes<32>),
+    #[error("fee override is not supported by this amm")]
+    FeeOverrideUnsupported,
     #[error(transparent)]
     JoinError(#[from] tokio::task::JoinError),
 }
